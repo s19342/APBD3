@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using APBD3.DAL;
@@ -17,44 +18,80 @@ namespace APBD3.Controllers
         {
             _dbService = dbService;
         }
-        public IActionResult GetStudents(string orderBy)
+        [HttpGet]
+        public IActionResult GetStudent()
         {
-            return Ok(_dbService.GetStudents());
-        }
+            var listOfStudents = new List<Student>();
 
-        [HttpGet("{id}")]
-        public IActionResult GetStudent(int id)
-        {
-            if (id == 1)
+            using(var connection = new SqlConnection(@"Data Source=db-mssql;Initial Catalog=s19342;Integrated Security=True"))
             {
-                return Ok("Kowalski");
-            } else if (id == 2)
-            {
-                return Ok("Malewski");
+                using(var command = new SqlCommand())
+                {
+                    command.Connection = connection;
+                    command.CommandText = @"select s.FirstName, s.LastName, s.BirthDate, st.Name as Studies, e.Semester
+                                            from Student s
+                                            join Enrollment e on e.IdEnrollment = s.IdEnrollment
+                                            join Studies st on st.IdStudy = e.IdStudy;";
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    while(reader.Read())
+                    {
+                        var st = new Student
+                        {
+                            FirstName = reader["FirstName"].ToString(),
+                            LastName = reader["LastName"].ToString(),
+                            DateOfBirth = DateTime.Parse(reader["BirthDate"].ToString()),
+                            Studies = reader["Studies"].ToString(),
+                            Semester = int.Parse(reader["Semester"].ToString())
+                        };
+                    listOfStudents.Add(st);
+                    }
+
+                }
             }
-            return NotFound("Student not found");
+            return Ok(listOfStudents);
         }
 
-        [HttpPost]
-        public IActionResult CreateStudent(Student student)
+        [HttpGet("{index}")]
+        public IActionResult GetStudent(string index)
         {
-            //... add to database
-            //... generating index number
-            student.IndexNumber = $"s{new Random().Next(1, 20000)}";
+            var listOfStudents = new List<Student>();
 
-            return Ok(student);
-        }
-        
-        [HttpPut("{id}")]
-        public IActionResult UpdateStudent(int id)
-        {
-            return Ok("Update complete");
-        }
+            using (var connection = new SqlConnection(@"Data Source=db-mssql;Initial Catalog=s19342;Integrated Security=True"))
+            {
+                using (var command = new SqlCommand())
+                {
+                    command.Connection = connection;
+                    command.CommandText = @"select s.FirstName, s.LastName, s.BirthDate, st.Name as Studies, e.Semester
+                                            from Student s
+                                            join Enrollment e on e.IdEnrollment = s.IdEnrollment
+                                            join Studies st on st.IdStudy = e.IdStudy
+                                            where s.IndexNumber = @index;";
+                    command.Parameters.AddWithValue("@index", index);
+                    connection.Open();
+                    var reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        var st = new Student
+                        {
+                            FirstName = reader["FirstName"].ToString(),
+                            LastName = reader["LastName"].ToString(),
+                            DateOfBirth = DateTime.Parse(reader["BirthDate"].ToString()),
+                            Studies = reader["Studies"].ToString(),
+                            Semester = int.Parse(reader["Semester"].ToString())
+                        };
+                        listOfStudents.Add(st);
+                    }
+                }
 
-        [HttpDelete("{id}")]
-        public IActionResult DeleteStudent(int id)
-        {
-            return Ok("Delete completed");
+                if (listOfStudents.Count == 0)
+                {
+                    return NotFound("The student does not exist");
+                }
+
+                return Ok(listOfStudents);
+            }
+           
         }
     }
 }

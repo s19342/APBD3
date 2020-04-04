@@ -9,7 +9,7 @@ namespace APBD3.DAL
     public class MockDbService : IDbService
     {
         private static IEnumerable<Student> _students;
-
+        /*
         static MockDbService()
         {
             _students = new List<Student>
@@ -18,7 +18,7 @@ namespace APBD3.DAL
                 new Student{IdStudent=2, FirstName="Anna", LastName="Malewski"},
                 new Student{IdStudent=3, FirstName="Andrzej", LastName="Andrzejewicz"}
             };
-        }
+        }*/
         public IEnumerable<Student> GetStudents()
         {
             return _students;
