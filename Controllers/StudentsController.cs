@@ -55,41 +55,39 @@ namespace APBD3.Controllers
         [HttpGet("{index}")]
         public IActionResult GetStudent(string index)
         {
-            var listOfStudents = new List<Student>();
+            var listOfEnrollments = new List<Enrollment>();
 
             using (var connection = new SqlConnection(@"Data Source=db-mssql;Initial Catalog=s19342;Integrated Security=True"))
             {
                 using (var command = new SqlCommand())
                 {
                     command.Connection = connection;
-                    command.CommandText = @"select s.FirstName, s.LastName, s.BirthDate, st.Name as Studies, e.Semester
+                    command.CommandText = @"select e.IdEnrollment, e.Semester, e.IdStudy, e.StartDate
                                             from Student s
                                             join Enrollment e on e.IdEnrollment = s.IdEnrollment
-                                            join Studies st on st.IdStudy = e.IdStudy
                                             where s.IndexNumber = @index;";
                     command.Parameters.AddWithValue("@index", index);
                     connection.Open();
                     var reader = command.ExecuteReader();
                     while (reader.Read())
                     {
-                        var st = new Student
+                        var enrollment = new Enrollment
                         {
-                            FirstName = reader["FirstName"].ToString(),
-                            LastName = reader["LastName"].ToString(),
-                            DateOfBirth = DateTime.Parse(reader["BirthDate"].ToString()),
-                            Studies = reader["Studies"].ToString(),
-                            Semester = int.Parse(reader["Semester"].ToString())
+                            IdEnrollment = int.Parse(reader["IdEnrollment"].ToString()),
+                            Semester = int.Parse(reader["Semester"].ToString()),
+                            IdStudy = int.Parse(reader["IdStudy"].ToString()),
+                            StartDate = DateTime.Parse(reader["StartDate"].ToString())
                         };
-                        listOfStudents.Add(st);
+                        listOfEnrollments.Add(enrollment);
                     }
                 }
 
-                if (listOfStudents.Count == 0)
+                if (listOfEnrollments.Count == 0)
                 {
-                    return NotFound("The student does not exist");
+                    return NotFound("The enrollment does not exist");
                 }
 
-                return Ok(listOfStudents);
+                return Ok(listOfEnrollments);
             }
            
         }
