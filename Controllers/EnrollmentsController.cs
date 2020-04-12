@@ -41,7 +41,7 @@ namespace APBD3.Controllers
 
             if(promoteStudentResponse == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
             return this.StatusCode(201, promoteStudentResponse);
