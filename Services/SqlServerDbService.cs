@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.IO;
 using APBD3.DTOs.Requests;
 using APBD3.DTOs.Responses;
 using APBD3.Models;
@@ -286,6 +287,54 @@ namespace APBD3.Services
             }
             return listOfStudents;
         }
-               
+
+        public Student GetStudentByIndex(string index)
+        {
+            Student st = null;
+
+            using (var connection = new SqlConnection(@"Data Source=db-mssql;Initial Catalog=s19342;Integrated Security=True"))
+            {
+                using (var command = new SqlCommand())
+                {
+                    command.Connection = connection;
+                    command.CommandText = @"select s.FirstName, s.LastName, s.BirthDate, st.Name as Studies, e.Semester
+                                            from Student s
+                                            join Enrollment e on e.IdEnrollment = s.IdEnrollment
+                                            join Studies st on st.IdStudy = e.IdStudy
+                                            where s.IndexNumber=@index;";
+                    command.Parameters.AddWithValue("@index", index);
+                    connection.Open();
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            st = new Student
+                            {
+                                FirstName = reader["FirstName"].ToString(),
+                                LastName = reader["LastName"].ToString(),
+                                DateOfBirth = DateTime.Parse(reader["BirthDate"].ToString()),
+                                Studies = reader["Studies"].ToString(),
+                                Semester = int.Parse(reader["Semester"].ToString())
+                            };
+                        }
+                    }
+                }
+            }
+
+            return st;
+        }
+
+        public void SaveLogData(string method, string path, string body, string query)
+        {
+            string filePath = "requestsLog.txt";
+            using (StreamWriter sw = File.AppendText(filePath))
+            {
+                sw.WriteLine($"HTTP Method: {method}");
+                sw.WriteLine($"Endpoint path: {path}");
+                sw.WriteLine($"Body of request: {body}");
+                sw.WriteLine($"Query string: {query}");
+                sw.WriteLine();
+            }
+        }
     }
 }

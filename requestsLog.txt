@@ -1,0 +1,28 @@
+HTTP Method: GET
+Endpoint path: /api/students
+Body of request: 
+Query string: 
+
+HTTP Method: POST
+Endpoint path: /api/students
+Body of request: {
+"Studies": "Computer Science",
+"Semester": 1
+}
+Query string: ?secret=Something&secret2=SomethingElse
+
+HTTP Method: GET
+Endpoint path: /api/students
+Body of request: 
+Query string: 
+
+HTTP Method: GET
+Endpoint path: /api/students
+Body of request: 
+Query string: 
+
+HTTP Method: GET
+Endpoint path: /api/students
+Body of request: 
+Query string: 
+

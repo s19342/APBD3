@@ -15,6 +15,10 @@ namespace APBD3.Services
 
         public EnrollStudentResponse EnrollStudent(EnrollStudentRequest request);
 
-        public PromoteStudentResponse PromoteStudents(PromoteStudentRequest promoteStudentRequest);//return boolean or something
+        public PromoteStudentResponse PromoteStudents(PromoteStudentRequest promoteStudentRequest);
+
+        public Student GetStudentByIndex(string index);
+
+        public void SaveLogData(string method, string path, string body, string query);
     }
 }
