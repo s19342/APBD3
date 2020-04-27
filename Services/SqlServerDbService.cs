@@ -336,5 +336,90 @@ namespace APBD3.Services
                 sw.WriteLine();
             }
         }
+
+        public LoginAttemptResponse checkLogin(string login)
+        {
+            LoginAttemptResponse loginAttemptResponse = null;
+
+            using (var connection = new SqlConnection(@"Data Source=db-mssql;Initial Catalog=s19342;Integrated Security=True"))
+            {
+                using (var command = new SqlCommand())
+                {
+                    command.Connection = connection;
+                    command.CommandText = @"select s.StdPassword, s.Salt, s.FirstName
+                                            from Student s
+                                            where s.IndexNumber = @login;";
+                    command.Parameters.AddWithValue("@login", login);
+                    connection.Open();
+                    using (var reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            loginAttemptResponse = new LoginAttemptResponse
+                            {
+                                Hash = reader["StdPassword"].ToString(),
+                                Salt = reader["Salt"].ToString(),
+                                FirstName = reader["FirstName"].ToString()
+                            };                      
+                        }
+                    }
+                }
+            }
+
+            return loginAttemptResponse;
+        }
+
+        public void RecordToken(Token token)
+        {
+            using (var connection = new SqlConnection(@"Data Source=db-mssql;Initial Catalog=s19342;Integrated Security=True"))
+            {
+                using (var command = new SqlCommand())
+                {
+                    command.Connection = connection;
+                    command.CommandText = @"INSERT INTO RefreshToken(TokenId, UserLogin, FirstName)
+                                            VALUES(@tokenId, @userLogin, @firstName);";
+                    command.Parameters.AddWithValue("@tokenId", token.TokenString);
+                    command.Parameters.AddWithValue("@userLogin", token.NameIdentifier);
+                    command.Parameters.AddWithValue("@firstName", token.FirstName);
+                    connection.Open();
+
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public Token validateToken(string requestToken)
+        {
+            using (var connection = new SqlConnection(@"Data Source=db-mssql;Initial Catalog=s19342;Integrated Security=True"))
+            {
+                using (var command = new SqlCommand())
+                {
+                    command.Connection = connection;
+                    command.CommandText = @"Select r.TokenId, r.UserLogin, r.FirstName
+                                            from RefreshToken r 
+                                            where r.TokenId=@tokenGiven;";
+                    command.Parameters.AddWithValue("@tokenGiven", requestToken);
+
+                    connection.Open();
+
+                    var reader = command.ExecuteReader();
+
+                    if(!reader.Read())
+                    {
+                        return null;
+                    }
+
+                    var token = new Token
+                    {
+                        TokenString = reader["TokenId"].ToString(),
+                        NameIdentifier = reader["UserLogin"].ToString(),
+                        FirstName = reader["FirstName"].ToString()
+                    };
+
+                    return token;
+                }
+            }
+        }
+
     }
 }

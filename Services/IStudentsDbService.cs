@@ -20,5 +20,11 @@ namespace APBD3.Services
         public Student GetStudentByIndex(string index);
 
         public void SaveLogData(string method, string path, string body, string query);
+
+        public LoginAttemptResponse checkLogin(string login);
+
+        public void RecordToken(Token token);
+
+        public Token validateToken(string requestToken);
     }
 }

@@ -26,3 +26,8 @@ Endpoint path: /api/students
 Body of request: 
 Query string: 
 
+HTTP Method: GET
+Endpoint path: /api/students
+Body of request: 
+Query string: 
+
